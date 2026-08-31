@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a2e1c">
+<title>Defence Day 2026 Poster Creator</title>
+<style>
+  :root{
+    --bg:#07130d;
+    --panel:#0e2015;
+    --line:#1f3a2a;
+    --green:#0f5132;
+    --green2:#0a3a24;
+    --gold:#c89b3c;
+    --gold2:#e0b95c;
+    --text:#f3f3f0;
+    --muted:#9db2a4;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+  body{min-height:100vh}
+  .app{
+    min-height:100vh;
+    display:grid;
+    grid-template-columns:330px minmax(0,1fr);
+    gap:0;
+  }
+  .controls{
+    background:linear-gradient(180deg,#0e2015,#07130d);
+    border-right:1px solid var(--line);
+    padding:24px 20px 40px;
+    overflow:auto;
+    position:relative;
+    z-index:5;
+  }
+  .brand{
+    font-size:21px;
+    font-weight:800;
+    letter-spacing:.5px;
+    margin-bottom:4px;
+  }
+  .brand span{color:var(--gold2)}
+  .subtitle{
+    color:#7fa08c;
+    font-size:11px;
+    letter-spacing:1.6px;
+    text-transform:uppercase;
+    margin-bottom:24px;
+  }
+  .section{margin-top:20px}
+  .section-title{
+    color:#e6e6e0;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    font-weight:700;
+    margin:0 0 10px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .section-title .num{
+    width:17px;height:17px;
+    border-radius:50%;
+    background:var(--gold);
+    color:#0a2214;
+    font-size:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    font-weight:800;
+  }
+  .upload{
+    width:100%;
+    min-height:46px;
+    border:1px solid #2c4a37;
+    background:#122619;
+    color:#fff;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-weight:700;
+    font-size:13px;
+    transition:.15s;
+  }
+  .upload:hover{border-color:var(--gold);background:#16301f}
+  .filename{
+    margin-top:7px;
+    color:#7fa08c;
+    font-size:10.5px;
+    word-break:break-all;
+  }
+  #photoInput{display:none}
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  button{
+    appearance:none;
+    border:1px solid #2c4a37;
+    background:#122619;
+    color:#eee;
+    min-height:42px;
+    border-radius:7px;
+    font-weight:700;
+    font-size:12px;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .08s;
+    touch-action:manipulation;
+  }
+  button:hover{background:#193320;border-color:var(--gold2)}
+  button:active{transform:translateY(1px)}
+  .primary{
+    width:100%;
+    min-height:50px;
+    margin-top:4px;
+    border-color:var(--gold);
+    background:linear-gradient(180deg,#e0b95c,#b8842a);
+    color:#12210f;
+    font-size:13px;
+    letter-spacing:.5px;
+  }
+  .primary:hover{background:linear-gradient(180deg,#eac572,#c78f30);border-color:var(--gold2)}
+  .nudge-pad{
+    margin-top:8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .nudge-row{display:flex;gap:8px}
+  .nudge-pad button{
+    width:54px;
+    min-height:38px;
+    font-size:14px;
+  }
+  .name-input{
+    width:100%;
+    height:45px;
+    border:1px solid #2c4a37;
+    border-radius:7px;
+    background:#0a1a11;
+    color:#fff;
+    padding:0 12px;
+    outline:none;
+    font-size:14px;
+  }
+  .name-input:focus{border-color:var(--gold2);box-shadow:0 0 0 2px rgba(224,185,92,.15)}
+  .hint{
+    color:#6f8c7b;
+    font-size:10px;
+    line-height:1.45;
+    margin-top:7px;
+  }
+  .share-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+  }
+  .share-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    border-left:3px solid var(--accent,#555);
+  }
+  .full-span{grid-column:1 / -1}
+  .toast{
+    margin-top:10px;
+    background:#0f2a1a;
+    border:1px solid var(--gold);
+    color:#e0b95c;
+    font-size:11px;
+    line-height:1.5;
+    padding:9px 10px;
+    border-radius:7px;
+    display:none;
+  }
+  .toast.show{display:block}
+  .feedback{
+    margin-top:18px;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+    display:none;
+  }
+  .feedback.show{display:block}
+  .feedback-title{
+    font-size:11.5px;
+    color:#dcdcd6;
+    margin-bottom:9px;
+    font-weight:700;
+  }
+  .stars{display:flex;gap:6px}
+  .star{
+    background:none;
+    border:none;
+    font-size:22px;
+    color:#2c4a37;
+    min-height:auto;
+    padding:0;
+    cursor:pointer;
+    line-height:1;
+  }
+  .star.filled{color:var(--gold2)}
+  .feedback-thanks{
+    margin-top:9px;
+    font-size:11px;
+    color:#e0b95c;
+    display:none;
+  }
+  .feedback-thanks.show{display:block}
+  .status{
+    margin-top:18px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+    color:#5f7a6a;
+    font-size:10px;
+    line-height:1.5;
+  }
+  .preview{
+    min-width:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(circle at 50% 42%,#122619 0,#0a1a11 35%,#050d08 75%);
+    overflow:hidden;
+  }
+  .canvas-wrap{
+    width:min(58vh, calc(100vw - 390px), 560px);
+    max-width:100%;
+    position:relative;
+    box-shadow:0 20px 70px rgba(0,0,0,.7),0 0 45px rgba(200,155,60,.10);
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  canvas{
+    width:100%;
+    height:auto;
+    display:block;
+    background:#000;
+    touch-action:none;
+    cursor:grab;
+  }
+  canvas.dragging{cursor:grabbing}
+  .empty-note{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    color:#7fa08c;
+    font-size:12px;
+    text-align:center;
+    padding:20px;
+  }
+  .empty-note.hidden{display:none}
+  @media (max-width:760px){
+    .app{grid-template-columns:1fr;display:flex;flex-direction:column}
+    .controls{
+      order:2;
+      border-right:0;
+      border-top:1px solid var(--line);
+      padding:16px;
+    }
+    .preview{
+      order:1;
+      min-height:auto;
+      padding:14px;
+      align-items:flex-start;
+    }
+    .canvas-wrap{width:min(78vw,480px)}
+    .brand{font-size:18px}
+    .subtitle{margin-bottom:14px}
+    .section{margin-top:14px}
+  }
+  @media (min-width:761px) and (max-height:760px){
+    .preview{padding:12px}
+    .canvas-wrap{width:min(64vh,calc(100vw - 370px))}
+    .controls{padding:16px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="controls">
+    <div class="brand">DEFENCE DAY <span>2026</span></div>
+    <div class="subtitle">Pharmedic · Truth in Medicine · Poster Studio</div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">1</span>Upload Photo</div>
+      <label class="upload" for="photoInput">CHOOSE PHOTO</label>
+      <input id="photoInput" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png">
+      <div class="filename" id="fileName">No file chosen</div>
+      <div class="hint">Best with a clear portrait photo. After upload, drag the photo directly inside the circular frame to reposition it.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">2</span>Adjust Photo</div>
+      <div class="grid">
+        <button id="zoomOut">− Zoom</button>
+        <button id="zoomIn">+ Zoom</button>
+        <button id="rotateLeft">↺ Rotate</button>
+        <button id="rotateRight">↻ Rotate</button>
+        <button id="fit">Fit to Frame</button>
+        <button id="reset">Reset</button>
+      </div>
+      <div class="nudge-pad" aria-label="Nudge photo position">
+        <div class="nudge-row"><button id="nudgeUp" title="Move up">↑</button></div>
+        <div class="nudge-row">
+          <button id="nudgeLeft" title="Move left">←</button>
+          <button id="nudgeDown" title="Move down">↓</button>
+          <button id="nudgeRight" title="Move right">→</button>
+        </div>
+      </div>
+      <div class="hint">Photo is clipped to the circular frame. The gold ring and poster design always stay on top.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">3</span>Name &amp; Designation</div>
+      <input id="nameInput" class="name-input" type="text" value="" maxlength="60" autocomplete="off" spellcheck="false" aria-label="Name" placeholder="Enter name">
+      <input id="designationInput" class="name-input" type="text" value="" maxlength="80" autocomplete="off" spellcheck="false" aria-label="Designation" placeholder="Enter designation" style="margin-top:8px">
+      <div class="hint">Both fields are optional. Examples: Marketing Manager, Head of Marketing, SPO, Sales Promotion Officer.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">4</span>Download &amp; Share</div>
+      <button id="download" class="primary">DOWNLOAD POSTER · 4K PNG</button>
+      <div class="share-grid">
+        <button class="share-btn" data-platform="whatsapp" style="--accent:#25D366">WhatsApp</button>
+        <button class="share-btn" data-platform="facebook" style="--accent:#1877F2">Facebook</button>
+        <button class="share-btn" data-platform="linkedin" style="--accent:#0A66C2">LinkedIn</button>
+        <button class="share-btn full-span" id="copyCaption" style="--accent:var(--gold2)">Copy Caption</button>
+      </div>
+      <div class="hint">Sharing downloads the poster and opens the platform with a ready-made caption. On supported phones, the poster image is shared directly.</div>
+      <div class="toast" id="shareToast"></div>
+    </div>
+
+    <div class="feedback" id="feedback">
+      <div class="feedback-title">How was your experience?</div>
+      <div class="stars" id="stars">
+        <button class="star" data-value="1">★</button>
+        <button class="star" data-value="2">★</button>
+        <button class="star" data-value="3">★</button>
+        <button class="star" data-value="4">★</button>
+        <button class="star" data-value="5">★</button>
+      </div>
+      <div class="feedback-thanks" id="feedbackThanks">Thanks for your feedback!</div>
+    </div>
+
+    <div class="status">
+      <div>Photo frame: circular · optimized for touch and mouse</div>
+      <div>Output: 4× resolution PNG (4096 × 6144)</div>
+      <div>Works offline on GitHub Pages.</div>
+    </div>
+  </aside>
+
+  <main class="preview">
+    <div class="canvas-wrap">
+      <canvas id="posterCanvas" width="1024" height="1536" aria-label="Poster preview"></canvas>
+      <div id="emptyNote" class="empty-note">Upload a photo to place it inside the circular frame.</div>
+    </div>
+  </main>
+</div>
+
+<!-- The poster is intentionally loaded as a separate repository file. -->
+<img id="posterImage" src="poster.png" alt="" style="display:none">
+
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("posterCanvas");
+  const ctx = canvas.getContext("2d", { alpha:false });
+  const posterImage = document.getElementById("posterImage");
+  const input = document.getElementById("photoInput");
+  const nameInput = document.getElementById("nameInput");
+  const designationInput = document.getElementById("designationInput");
+  const emptyNote = document.getElementById("emptyNote");
+  const fileName = document.getElementById("fileName");
+  const shareToast = document.getElementById("shareToast");
+  const feedback = document.getElementById("feedback");
+  const feedbackThanks = document.getElementById("feedbackThanks");
+
+  // Base poster is 1024 x 1536. Coordinates below were measured directly
+  // from the supplied Defence Day 2026 artwork.
+  const BASE_W = 1024, BASE_H = 1536;
+
+  // Photo is clipped a little inside the gold ring so the ring itself
+  // always stays fully visible on top of the uploaded photo.
+  const FRAME = {
+    cx: 805,
+    cy: 753,
+    r: 124
+  };
+
+  const NAME_PLATE = {
+    left: 646,
+    top: 931,
+    right: 965,
+    bottom: 1028
+  };
+
+  const state = {
+    photo: null,
+    objectUrl: null,
+    x: FRAME.cx,
+    y: FRAME.cy,
+    scale: 1,
+    rotation: 0,
+    baseScale: 1,
+    dragging: false,
+    pointerId: null,
+    lastX: 0,
+    lastY: 0
+  };
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function drawPosterBase(targetCtx, width, height) {
+    targetCtx.imageSmoothingEnabled = true;
+    targetCtx.imageSmoothingQuality = "high";
+    targetCtx.drawImage(posterImage, 0, 0, width, height);
+  }
+
+  function drawPhoto(targetCtx, W=BASE_W, H=BASE_H) {
+    if (!state.photo) return;
+
+    const sx = W / BASE_W;
+    const sy = H / BASE_H;
+    const cx = FRAME.cx * sx;
+    const cy = FRAME.cy * sy;
+    const radius = FRAME.r * Math.min(sx, sy);
+
+    targetCtx.save();
+    targetCtx.beginPath();
+    targetCtx.arc(cx, cy, radius, 0, Math.PI*2);
+    targetCtx.clip();
+
+    targetCtx.translate(state.x * sx, state.y * sy);
+    targetCtx.rotate(state.rotation);
+    targetCtx.scale(state.scale * sx, state.scale * sy);
+
+    const pw = state.photo.naturalWidth || state.photo.width;
+    const ph = state.photo.naturalHeight || state.photo.height;
+    targetCtx.imageSmoothingEnabled = true;
+    targetCtx.imageSmoothingQuality = "high";
+    targetCtx.drawImage(state.photo, -pw/2, -ph/2, pw, ph);
+    targetCtx.restore();
+  }
+
+  function drawName(targetCtx, W=BASE_W, H=BASE_H) {
+    const name = nameInput.value.trim();
+    const designation = designationInput.value.trim();
+    if (!name && !designation) return;
+    const s = W / BASE_W;
+    const left = NAME_PLATE.left * s, right = NAME_PLATE.right * s;
+    const top = NAME_PLATE.top * s, bottom = NAME_PLATE.bottom * s;
+    const centerX = (left + right) / 2, centerY = (top + bottom) / 2;
+    const boxW = right - left, boxH = bottom - top, maxWidth = boxW * .86;
+    targetCtx.save(); targetCtx.textAlign = "center"; targetCtx.textBaseline = "middle";
+    targetCtx.imageSmoothingEnabled = true; targetCtx.imageSmoothingQuality = "high";
+    if (name && !designation) {
+      let size=Math.min(34*s,boxH*.44); targetCtx.font=`700 ${Math.round(size)}px Arial, Helvetica, sans-serif`;
+      while(targetCtx.measureText(name).width>maxWidth && size>12*s){size-=s;targetCtx.font=`700 ${Math.round(size)}px Arial, Helvetica, sans-serif`;}
+      targetCtx.fillStyle="#0f5132"; targetCtx.fillText(name,centerX,centerY);
+    }
+    if (!name && designation) {
+      let size=Math.min(24*s,boxH*.32); targetCtx.font=`600 ${Math.round(size)}px Arial, Helvetica, sans-serif`;
+      while(targetCtx.measureText(designation).width>maxWidth && size>10*s){size-=s;targetCtx.font=`600 ${Math.round(size)}px Arial, Helvetica, sans-serif`;}
+      targetCtx.fillStyle="#a9791f"; targetCtx.fillText(designation,centerX,centerY);
+    }
+    if (name && designation) {
+      let ns=Math.min(28*s,boxH*.34), ds=Math.min(18*s,boxH*.22);
+      targetCtx.font=`700 ${Math.round(ns)}px Arial, Helvetica, sans-serif`;
+      while(targetCtx.measureText(name).width>maxWidth && ns>11*s){ns-=s;targetCtx.font=`700 ${Math.round(ns)}px Arial, Helvetica, sans-serif`;}
+      targetCtx.font=`600 ${Math.round(ds)}px Arial, Helvetica, sans-serif`;
+      while(targetCtx.measureText(designation).width>maxWidth && ds>9*s){ds-=s;targetCtx.font=`600 ${Math.round(ds)}px Arial, Helvetica, sans-serif`;}
+      const gap=6*s,total=ns+gap+ds,ny=centerY-total/2+ns/2,dy=centerY-total/2+ns+gap+ds/2;
+      targetCtx.font=`700 ${Math.round(ns)}px Arial, Helvetica, sans-serif`; targetCtx.fillStyle="#0f5132"; targetCtx.fillText(name,centerX,ny);
+      targetCtx.font=`600 ${Math.round(ds)}px Arial, Helvetica, sans-serif`; targetCtx.fillStyle="#a9791f"; targetCtx.fillText(designation,centerX,dy);
+    }
+    targetCtx.restore();
+  }
+
+  function render() {
+    const W = BASE_W, H = BASE_H;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,W,H);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    drawPosterBase(ctx,W,H);
+    drawPhoto(ctx,W,H);
+    drawName(ctx,W,H);
+  }
+
+  function fitPhoto() {
+    if (!state.photo) return;
+    const pw = state.photo.naturalWidth || state.photo.width;
+    const ph = state.photo.naturalHeight || state.photo.height;
+    const diameter = FRAME.r * 2;
+    state.baseScale = Math.max(diameter / pw, diameter / ph);
+    state.scale = state.baseScale;
+    state.x = FRAME.cx;
+    state.y = FRAME.cy;
+    state.rotation = 0;
+    render();
+  }
+
+  function resetPhoto() {
+    if (!state.photo) return;
+    fitPhoto();
+  }
+
+  function zoom(factor) {
+    if (!state.photo) return;
+    state.scale = clamp(state.scale * factor, state.baseScale * 0.35, state.baseScale * 8);
+    render();
+  }
+
+  function rotate(deg) {
+    if (!state.photo) return;
+    state.rotation += deg * Math.PI / 180;
+    render();
+  }
+
+  function nudge(dx, dy) {
+    if (!state.photo) return;
+    state.x += dx;
+    state.y += dy;
+    render();
+  }
+
+  function getCanvasPoint(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (BASE_W / rect.width),
+      y: (e.clientY - rect.top) * (BASE_H / rect.height)
+    };
+  }
+
+  canvas.addEventListener("pointerdown", e => {
+    if (!state.photo) return;
+    state.dragging = true;
+    state.pointerId = e.pointerId;
+    state.lastX = getCanvasPoint(e).x;
+    state.lastY = getCanvasPoint(e).y;
+    canvas.classList.add("dragging");
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener("pointermove", e => {
+    if (!state.dragging || e.pointerId !== state.pointerId) return;
+    const p = getCanvasPoint(e);
+    state.x += p.x - state.lastX;
+    state.y += p.y - state.lastY;
+    state.lastX = p.x;
+    state.lastY = p.y;
+    render();
+  });
+
+  function endDrag(e) {
+    if (e.pointerId !== state.pointerId) return;
+    state.dragging = false;
+    state.pointerId = null;
+    canvas.classList.remove("dragging");
+  }
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+  canvas.addEventListener("pointerleave", e => {
+    if (state.dragging && e.pointerType === "mouse") endDrag(e);
+  });
+
+  canvas.addEventListener("wheel", e => {
+    if (!state.photo) return;
+    e.preventDefault();
+    zoom(e.deltaY < 0 ? 1.08 : 0.925);
+  }, {passive:false});
+
+  input.addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!/^image\/(jpeg|png)$/.test(file.type) && !/\.(jpe?g|png)$/i.test(file.name)) {
+      alert("Please select a JPG, JPEG, or PNG image.");
+      input.value = "";
+      return;
+    }
+    fileName.textContent = file.name;
+    if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
+    state.objectUrl = URL.createObjectURL(file);
+
+    const image = new Image();
+    image.onload = () => {
+      state.photo = image;
+      emptyNote.classList.add("hidden");
+      fitPhoto();
+    };
+    image.onerror = () => alert("The selected image could not be loaded.");
+    image.src = state.objectUrl;
+  });
+
+  nameInput.addEventListener("input", render);
+  designationInput.addEventListener("input", render);
+
+  document.getElementById("zoomIn").addEventListener("click", () => zoom(1.15));
+  document.getElementById("zoomOut").addEventListener("click", () => zoom(0.87));
+  document.getElementById("rotateLeft").addEventListener("click", () => rotate(-15));
+  document.getElementById("rotateRight").addEventListener("click", () => rotate(15));
+  document.getElementById("fit").addEventListener("click", fitPhoto);
+  document.getElementById("reset").addEventListener("click", resetPhoto);
+
+  const NUDGE_STEP = 10;
+  document.getElementById("nudgeUp").addEventListener("click", () => nudge(0, -NUDGE_STEP));
+  document.getElementById("nudgeDown").addEventListener("click", () => nudge(0, NUDGE_STEP));
+  document.getElementById("nudgeLeft").addEventListener("click", () => nudge(-NUDGE_STEP, 0));
+  document.getElementById("nudgeRight").addEventListener("click", () => nudge(NUDGE_STEP, 0));
+
+  // ---- 4K export ----
+  // 4x the base 1024x1536 canvas = 4096 x 6144 (true 4K-class width).
+  const EXPORT_SCALE = 4;
+
+  function renderHighRes() {
+    const out = document.createElement("canvas");
+    out.width = BASE_W * EXPORT_SCALE;
+    out.height = BASE_H * EXPORT_SCALE;
+    const o = out.getContext("2d");
+    o.imageSmoothingEnabled = true;
+    o.imageSmoothingQuality = "high";
+    drawPosterBase(o, out.width, out.height);
+    drawPhoto(o, out.width, out.height);
+    drawName(o, out.width, out.height);
+    return out;
+  }
+
+  function posterBlob(cb) {
+    const out = renderHighRes();
+    out.toBlob(blob => cb(blob), "image/png");
+  }
+
+  function downloadPoster(silent) {
+    posterBlob(blob => {
+      if (!blob) {
+        alert("Unable to create the PNG.");
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "defence-day-2026-poster.png";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(a.href);
+        a.remove();
+      }, 1000);
+      if (!silent) showToast("Poster downloaded as a 4K PNG (4096 × 6144).");
+      revealFeedback();
+    });
+  }
+
+  document.getElementById("download").addEventListener("click", () => downloadPoster(false));
+
+  // ---- Caption + social sharing ----
+  function buildCaption() {
+    const name = nameInput.value.trim();
+    const designation = designationInput.value.trim();
+    const who = name ? (designation ? `${name}, ${designation},` : `${name},`) : "";
+    const intro = who ? `${who} salutes our armed forces this Defence Day!` : "Saluting our armed forces this Defence Day!";
+    return [
+      intro,
+      "6 September — Defence Day 2026. A nation that defends, a nation that prevails. Proudly shared by Pharmedic — Truth in Medicine.",
+      "#DefenceDay2026 #6September #PharmedicTruthInMedicine #PakistanZindabad"
+    ].join("\n\n");
+  }
+
+  function showToast(msg) {
+    shareToast.textContent = msg;
+    shareToast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => shareToast.classList.remove("show"), 6000);
+  }
+
+  function copyCaption() {
+    const caption = buildCaption();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(caption)
+        .then(() => showToast("Caption copied to clipboard."))
+        .catch(() => showToast("Could not copy automatically — please copy the caption manually."));
+    } else {
+      showToast("Clipboard isn't available in this browser — please copy the caption manually.");
+    }
+    revealFeedback();
+  }
+
+  document.getElementById("copyCaption").addEventListener("click", copyCaption);
+
+  async function shareVia(platform) {
+    const caption = buildCaption();
+
+    // Prefer the native share sheet when it can carry the poster file —
+    // this covers WhatsApp, Facebook, etc. on most phones.
+    if (navigator.share && navigator.canShare) {
+      try {
+        const shared = await new Promise(resolve => {
+          posterBlob(blob => {
+            if (!blob) { resolve(false); return; }
+            const file = new File([blob], "defence-day-2026-poster.png", { type: "image/png" });
+            const payload = { files: [file], text: caption, title: "Defence Day 2026 Poster" };
+            if (navigator.canShare(payload)) {
+              navigator.share(payload).then(() => resolve(true)).catch(() => resolve(false));
+            } else {
+              resolve(false);
+            }
+          });
+        });
+        if (shared) { revealFeedback(); return; }
+      } catch (err) { /* fall through to web fallback */ }
+    }
+
+    // Desktop / unsupported fallback: download the poster and open the
+    // platform's own share dialog with the caption pre-filled.
+    downloadPoster(true);
+    const encodedText = encodeURIComponent(caption);
+    const encodedUrl = encodeURIComponent(location.href);
+    let url = null;
+    switch (platform) {
+      case "whatsapp":
+        url = `https://wa.me/?text=${encodedText}`;
+        break;
+      case "facebook":
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`;
+        break;
+      case "linkedin":
+        url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+    }
+    if (url) window.open(url, "_blank", "noopener");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(caption).catch(() => {});
+    }
+    showToast("Poster downloaded and caption copied — attach the poster in the share window that just opened.");
+    revealFeedback();
+  }
+
+  document.querySelectorAll(".share-btn[data-platform]").forEach(btn => {
+    btn.addEventListener("click", () => shareVia(btn.dataset.platform));
+  });
+
+  // ---- Feedback ----
+  function revealFeedback() {
+    feedback.classList.add("show");
+  }
+
+  document.getElementById("stars").addEventListener("click", e => {
+    const btn = e.target.closest(".star");
+    if (!btn) return;
+    const value = Number(btn.dataset.value);
+    document.querySelectorAll(".star").forEach(s => {
+      s.classList.toggle("filled", Number(s.dataset.value) <= value);
+    });
+    feedbackThanks.classList.add("show");
+  });
+
+  posterImage.addEventListener("load", () => {
+    canvas.width = posterImage.naturalWidth || BASE_W;
+    canvas.height = posterImage.naturalHeight || BASE_H;
+    render();
+  });
+
+  posterImage.addEventListener("error", () => {
+    emptyNote.textContent = "poster.png could not be loaded. Place poster.png beside index.html.";
+    emptyNote.classList.remove("hidden");
+  });
+
+  // Initial render if the browser has already completed the image load.
+  if (posterImage.complete && posterImage.naturalWidth) {
+    render();
+  }
+})();
+</script>
+</body>
+</html>
