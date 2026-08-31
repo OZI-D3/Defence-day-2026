@@ -5,6 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a2e1c">
 <title>Defence Day 2026 Poster Creator</title>
+
+<!-- ============================================================
+     GOOGLE ANALYTICS — paste your snippet here
+     ============================================================
+     1. Go to analytics.google.com → Admin → Data Streams → your
+        web stream, and copy the "Google tag" snippet (it looks
+        like the two <script> tags below).
+     2. Replace G-XXXXXXXXXX with your own Measurement ID.
+     3. Uncomment the two <script> blocks (remove the <!-- and -->).
+     The app already calls trackEvent(...) at every key action
+     (photo upload, zoom/rotate, download, each share button,
+     copy caption, star rating) — as soon as gtag is defined here,
+     those events start flowing into your GA4 property automatically.
+     ============================================================ -->
+<!--
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+-->
+
 <style>
   :root{
     --bg:#07130d;
@@ -391,6 +415,15 @@
   const feedback = document.getElementById("feedback");
   const feedbackThanks = document.getElementById("feedbackThanks");
 
+  // Sends an event to Google Analytics if the gtag snippet in <head>
+  // has been enabled. Safe to call even if analytics isn't set up —
+  // it just does nothing until you paste your GA code above.
+  function trackEvent(name, params) {
+    if (typeof gtag === "function") {
+      gtag("event", name, params || {});
+    }
+  }
+
   // Base poster is 1024 x 1536. Coordinates below were measured directly
   // from the supplied Defence Day 2026 artwork.
   const BASE_W = 1024, BASE_H = 1536;
@@ -606,6 +639,7 @@
       state.photo = image;
       emptyNote.classList.add("hidden");
       fitPhoto();
+      trackEvent("photo_upload");
     };
     image.onerror = () => alert("The selected image could not be loaded.");
     image.src = state.objectUrl;
@@ -614,12 +648,12 @@
   nameInput.addEventListener("input", render);
   designationInput.addEventListener("input", render);
 
-  document.getElementById("zoomIn").addEventListener("click", () => zoom(1.15));
-  document.getElementById("zoomOut").addEventListener("click", () => zoom(0.87));
-  document.getElementById("rotateLeft").addEventListener("click", () => rotate(-15));
-  document.getElementById("rotateRight").addEventListener("click", () => rotate(15));
-  document.getElementById("fit").addEventListener("click", fitPhoto);
-  document.getElementById("reset").addEventListener("click", resetPhoto);
+  document.getElementById("zoomIn").addEventListener("click", () => { zoom(1.15); trackEvent("adjust_photo", {action:"zoom_in"}); });
+  document.getElementById("zoomOut").addEventListener("click", () => { zoom(0.87); trackEvent("adjust_photo", {action:"zoom_out"}); });
+  document.getElementById("rotateLeft").addEventListener("click", () => { rotate(-15); trackEvent("adjust_photo", {action:"rotate_left"}); });
+  document.getElementById("rotateRight").addEventListener("click", () => { rotate(15); trackEvent("adjust_photo", {action:"rotate_right"}); });
+  document.getElementById("fit").addEventListener("click", () => { fitPhoto(); trackEvent("adjust_photo", {action:"fit"}); });
+  document.getElementById("reset").addEventListener("click", () => { resetPhoto(); trackEvent("adjust_photo", {action:"reset"}); });
 
   const NUDGE_STEP = 10;
   document.getElementById("nudgeUp").addEventListener("click", () => nudge(0, -NUDGE_STEP));
@@ -666,6 +700,11 @@
       }, 1000);
       if (!silent) showToast("Poster downloaded as a 4K PNG (4096 × 6144).");
       revealFeedback();
+      trackEvent("download_poster", {
+        resolution: `${BASE_W*EXPORT_SCALE}x${BASE_H*EXPORT_SCALE}`,
+        has_name: !!nameInput.value.trim(),
+        silent: !!silent
+      });
     });
   }
 
@@ -701,12 +740,14 @@
       showToast("Clipboard isn't available in this browser — please copy the caption manually.");
     }
     revealFeedback();
+    trackEvent("copy_caption");
   }
 
   document.getElementById("copyCaption").addEventListener("click", copyCaption);
 
   async function shareVia(platform) {
     const caption = buildCaption();
+    trackEvent("share_click", {platform});
 
     // Prefer the native share sheet when it can carry the poster file —
     // this covers WhatsApp, Facebook, etc. on most phones.
@@ -724,7 +765,11 @@
             }
           });
         });
-        if (shared) { revealFeedback(); return; }
+        if (shared) {
+          revealFeedback();
+          trackEvent("share_completed", {platform, method:"native_share"});
+          return;
+        }
       } catch (err) { /* fall through to web fallback */ }
     }
 
@@ -770,12 +815,14 @@
       s.classList.toggle("filled", Number(s.dataset.value) <= value);
     });
     feedbackThanks.classList.add("show");
+    trackEvent("feedback_rating", {rating: value});
   });
 
   posterImage.addEventListener("load", () => {
     canvas.width = posterImage.naturalWidth || BASE_W;
     canvas.height = posterImage.naturalHeight || BASE_H;
     render();
+    trackEvent("poster_tool_ready");
   });
 
   posterImage.addEventListener("error", () => {
